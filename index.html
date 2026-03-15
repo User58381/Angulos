@@ -1,126 +1,147 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canjeo de Estampas</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap');
-        body {
-            font-family: 'Comic Neue', cursive;
-            text-align: center;
-            background: url('./imagenes/fondo.jpg') no-repeat center center fixed;
-            background-size: cover;
-            color: white;
-        }
-        .sticker {
-            display: inline-block;
-            margin: 20px;
-            padding: 10px;
-            border-radius: 10px;
-            text-align: center;
-            position: relative;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 15px;
-            animation: glowEffect 2s infinite alternate;
-        }
-        .sticker img {
-            width: 120px;
-            height: 120px;
-            border-radius: 10px;
-            animation: stickerGlow 1.5s infinite alternate;
-        }
-        .sticker button {
-            margin-top: 10px;
-            padding: 5px 10px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        .raro { border: 4px solid blue; background-color: #d0e1ff; }
-        .epico { border: 4px solid purple; background-color: #e1c0ff; }
-        .legendario { border: 4px solid orange; background-color: #ffdbac; }
-        .mitico { border: 4px solid red; background-color: #ffc0c0; }
-        .exclusivo { border: 4px solid gold; background-color: #fff7c0; }
-        .superexclusivo { border: 4px solid black; background-color: #ffcc00; animation: superGlow 1.5s infinite alternate; }
+<meta charset="UTF-8">
+<title>El reloj de los ángulos - Pizza</title>
+<style>
+body{
+font-family: Arial, sans-serif;
+text-align:center;
+background:#f4f4f4;
+}
 
-        @keyframes glowEffect {
-            0% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.3); }
-            100% { box-shadow: 0 0 30px rgba(255, 255, 255, 0.8); }
-        }
+h1{
+margin-top:20px;
+}
 
-        @keyframes stickerGlow {
-            0% { filter: brightness(1); }
-            100% { filter: brightness(1.5); }
-        }
-        
-        @keyframes superGlow {
-            0% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
-            100% { box-shadow: 0 0 30px rgba(255, 215, 0, 1); }
-        }
-    </style>
+#pizza{
+margin:20px auto;
+display:block;
+}
+
+.slice{
+fill:#ffe8a3;
+stroke:#333;
+stroke-width:2;
+cursor:pointer;
+transition:0.2s;
+}
+
+.slice:hover{
+fill:#ffd46b;
+}
+
+.selected{
+fill:#ff8a65;
+}
+
+button{
+padding:10px 20px;
+font-size:16px;
+margin:5px;
+cursor:pointer;
+}
+
+#resultado{
+font-size:20px;
+margin-top:10px;
+font-weight:bold;
+}
+</style>
 </head>
+
 <body>
-    <h1>Canjeo de Estampas</h1>
-    <h2>Estampas del Día</h2>
-    <div id="stickerContainer"></div>
-    <script>
-        function obtenerEstampasDelDia() {
-            return [
-                { id: 1, nombre: "Taco Feliz", costo: 800, img: "./imagenes/taco_feliz.jpeg", rareza: "raro" },
-                { id: 2, nombre: "Pollito Amarillo", costo: 900, img: "./imagenes/pollito_amarillo.png", rareza: "epico" },
-                { id: 3, nombre: "Huevo Tierno", costo: 1000, img: "./imagenes/huevo_tierno.png", rareza: "legendario" },
-                { id: 4, nombre: "Gato Fresa", costo: 1100, img: "./imagenes/gato_fresa.png", rareza: "mitico" },
-                { id: 5, nombre: "Capibara Estrella", costo: 1200, img: "./imagenes/capibara_estrella.jpg", rareza: "exclusivo" },
-                { id: 6, nombre: "Aguacate Kawaii", costo: 1300, img: "./imagenes/aguacate_kawaii.jpg", rareza: "superexclusivo" }
-            ];
-        }
 
-        function renderStickers() {
-            const container = document.getElementById("stickerContainer");
-            container.innerHTML = "";
-            let stickers = obtenerEstampasDelDia();
-            stickers.forEach(sticker => {
-                let div = document.createElement("div");
-                div.className = `sticker ${sticker.rareza}`;
-                div.innerHTML = `
-                    <img src="${sticker.img}" alt="${sticker.nombre}"><br>
-                    <strong>${sticker.nombre}</strong><br>
-                    <span style="font-size: 18px; color: black;">${sticker.rareza.toUpperCase()}</span><br>
-                    Costo: ${sticker.costo} puntos<br>
-                    <button onclick="canjear('${sticker.img}', ${sticker.costo})">Canjear</button>
-                `;
-                container.appendChild(div);
-            });
-        }
+<h1>🍕 El reloj de los ángulos</h1>
+<p id="reto">Forma el ángulo de <b id="angulo"></b>°</p>
 
-        function canjear(imagen, costo) {
-            let cantidadPuntos = prompt(`Ingrese la cantidad de puntos para canjear esta estampa (Costo: ${costo} puntos):`);
-            if (cantidadPuntos !== null && !isNaN(cantidadPuntos) && cantidadPuntos.trim() !== "") {
-                cantidadPuntos = parseInt(cantidadPuntos);
-                if (cantidadPuntos >= costo) {
-                    imprimir(imagen);
-                } else {
-                    alert(`Necesitas al menos ${costo} puntos para canjear esta estampa.`);
-                }
-            } else {
-                alert("Entrada no válida. Intente nuevamente.");
-            }
-        }
+<svg id="pizza" width="400" height="400" viewBox="-200 -200 400 400"></svg>
 
-        function imprimir(imagen) {
-            let ventana = window.open("", "_blank");
-            ventana.document.write("<html><head><title>Impresión de Estampas</title><style>");
-            ventana.document.write("@page { size: landscape; margin: 0; }"); // Ajuste para modo horizontal
-            ventana.document.write("body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }");
-            ventana.document.write("img { width: 100%; height: auto; max-height: 100vh; }");
-            ventana.document.write("</style></head><body>");
-            ventana.document.write(`<img src="${imagen}">`);
-            ventana.document.write("</body></html>");
-            ventana.document.close();
-            setTimeout(() => { ventana.print(); ventana.close(); }, 500);
-        }
+<br>
 
-        renderStickers();
-    </script>
+<button onclick="revisar()">Revisar</button>
+<button onclick="reiniciar()">Nuevo reto</button>
+
+<p id="resultado"></p>
+
+<script>
+
+const pizza = document.getElementById("pizza");
+const anguloTexto = document.getElementById("angulo");
+const resultado = document.getElementById("resultado");
+
+const slices = [];
+let objetivo = 0;
+
+function crearPizza(){
+pizza.innerHTML="";
+for(let i=0;i<12;i++){
+
+let ang1 = (i*30-90)*Math.PI/180;
+let ang2 = ((i+1)*30-90)*Math.PI/180;
+
+let x1 = Math.cos(ang1)*180;
+let y1 = Math.sin(ang1)*180;
+
+let x2 = Math.cos(ang2)*180;
+let y2 = Math.sin(ang2)*180;
+
+let path = document.createElementNS("http://www.w3.org/2000/svg","path");
+
+let d = `M0,0 L${x1},${y1} A180,180 0 0,1 ${x2},${y2} Z`;
+
+path.setAttribute("d",d);
+path.setAttribute("class","slice");
+path.dataset.index=i;
+
+path.addEventListener("click",()=>{
+path.classList.toggle("selected");
+});
+
+pizza.appendChild(path);
+slices.push(path);
+}
+}
+
+function nuevoReto(){
+
+const angulos=[30,60,90,120,150,180,210,240,270,300];
+objetivo = angulos[Math.floor(Math.random()*angulos.length)];
+
+anguloTexto.textContent=objetivo;
+
+resultado.textContent="";
+reiniciarSeleccion();
+}
+
+function reiniciarSeleccion(){
+document.querySelectorAll(".slice").forEach(s=>{
+s.classList.remove("selected");
+});
+}
+
+function revisar(){
+
+let seleccionadas = document.querySelectorAll(".selected").length;
+let grados = seleccionadas * 30;
+
+if(grados===objetivo){
+resultado.style.color="green";
+resultado.textContent="¡Correcto! "+seleccionadas+" rebanadas = "+grados+"°";
+}else{
+resultado.style.color="red";
+resultado.textContent="Intenta otra vez. Tienes "+grados+"°";
+}
+}
+
+function reiniciar(){
+nuevoReto();
+}
+
+crearPizza();
+nuevoReto();
+
+</script>
+
 </body>
 </html>
