@@ -1,147 +1,692 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>El reloj de los ángulos - Pizza</title>
-<style>
-body{
-font-family: Arial, sans-serif;
-text-align:center;
-background:#f4f4f4;
-}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>El reloj de los ángulos - Pizza Pro</title>
+  <style>
+    :root{
+      --bg:#f7f4ee;
+      --card:#ffffff;
+      --text:#222;
+      --muted:#666;
+      --accent:#e67e22;
+      --accent-2:#c0392b;
+      --good:#1f9d55;
+      --bad:#d64545;
+      --line:#2f2f2f;
+      --dough:#d9a066;
+      --dough-dark:#bf874e;
+      --cheese:#f6d86b;
+      --sauce:#c53b2c;
+      --selected:#ffb14a;
+    }
 
-h1{
-margin-top:20px;
-}
+    *{box-sizing:border-box}
 
-#pizza{
-margin:20px auto;
-display:block;
-}
+    body{
+      margin:0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #fff8ec 0%, var(--bg) 100%);
+      color:var(--text);
+      text-align:center;
+    }
 
-.slice{
-fill:#ffe8a3;
-stroke:#333;
-stroke-width:2;
-cursor:pointer;
-transition:0.2s;
-}
+    .wrap{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 18px;
+    }
 
-.slice:hover{
-fill:#ffd46b;
-}
+    h1{
+      margin: 8px 0 4px;
+      font-size: clamp(2rem, 4vw, 3.6rem);
+      line-height: 1.05;
+    }
 
-.selected{
-fill:#ff8a65;
-}
+    .subtitle{
+      margin: 0 0 14px;
+      font-size: clamp(1rem, 2vw, 1.4rem);
+      color:#333;
+    }
 
-button{
-padding:10px 20px;
-font-size:16px;
-margin:5px;
-cursor:pointer;
-}
+    .topbar{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:12px;
+      margin: 14px auto 18px;
+    }
 
-#resultado{
-font-size:20px;
-margin-top:10px;
-font-weight:bold;
-}
-</style>
+    .panel{
+      background:var(--card);
+      border:3px solid #222;
+      border-radius:18px;
+      padding:12px 10px;
+      box-shadow: 0 6px 0 rgba(0,0,0,.08);
+    }
+
+    .panel .label{
+      font-size:.95rem;
+      color:var(--muted);
+      margin-bottom:4px;
+    }
+
+    .panel .value{
+      font-size: clamp(1.1rem, 2.6vw, 1.8rem);
+      font-weight:700;
+    }
+
+    .main{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:20px;
+      align-items:start;
+    }
+
+    .pizza-card{
+      background:var(--card);
+      border:3px dashed #222;
+      border-radius:24px;
+      padding:16px;
+    }
+
+    .side{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .instructions{
+      background:var(--card);
+      border:3px solid #222;
+      border-radius:20px;
+      padding:14px;
+      text-align:left;
+    }
+
+    .instructions h2{
+      margin:0 0 8px;
+      font-size:1.35rem;
+      text-align:center;
+    }
+
+    .instructions p{
+      margin:8px 0;
+      font-size:1.05rem;
+    }
+
+    .legend{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .legend .mini{
+      background:#fff9e8;
+      border:2px solid #222;
+      border-radius:14px;
+      padding:10px;
+      font-weight:700;
+      text-align:center;
+    }
+
+    .btns{
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap:10px;
+    }
+
+    button{
+      border:none;
+      border-radius:16px;
+      padding:14px 12px;
+      font-size:1rem;
+      font-weight:700;
+      cursor:pointer;
+      background:#222;
+      color:#fff;
+      box-shadow: 0 4px 0 rgba(0,0,0,.18);
+    }
+
+    button:hover{transform: translateY(-1px)}
+    button:active{transform: translateY(1px)}
+
+    .btn-accent{background:var(--accent)}
+    .btn-good{background:var(--good)}
+    .btn-warn{background:#5a67d8}
+    .btn-reset{background:#555}
+
+    #resultado{
+      min-height: 60px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:1.2rem;
+      font-weight:700;
+      border-radius:16px;
+      padding:10px;
+      background:#fff;
+      border:3px solid #222;
+    }
+
+    .ok{color:var(--good)}
+    .bad{color:var(--bad)}
+
+    .footer-note{
+      margin-top:10px;
+      font-size:1rem;
+      color:#444;
+      font-weight:700;
+    }
+
+    svg{
+      width:100%;
+      height:auto;
+      max-width:680px;
+      display:block;
+      margin:0 auto;
+    }
+
+    .slice{
+      cursor:pointer;
+      transition: filter .15s ease, transform .15s ease;
+    }
+
+    .slice:hover{
+      filter: brightness(1.06);
+    }
+
+    .slice.selected .cheeseFill{
+      fill: var(--selected) !important;
+    }
+
+    .slice.selected .sliceBorder{
+      stroke:#8a3b00 !important;
+      stroke-width:3.5 !important;
+    }
+
+    .angle-label{
+      font-size: 20px;
+      font-weight: 700;
+      fill: #1f1f1f;
+      pointer-events:none;
+      user-select:none;
+    }
+
+    .hour-label{
+      font-size: 22px;
+      font-weight: 700;
+      fill: #1f1f1f;
+      user-select:none;
+      pointer-events:none;
+    }
+
+    .hint{
+      margin-top:10px;
+      font-size:1rem;
+      color:#444;
+    }
+
+    .tiny{
+      font-size:.92rem;
+      color:#555;
+    }
+
+    .pizza-emoji{
+      font-size:1.3em;
+    }
+
+    @media (max-width: 900px){
+      .main{
+        grid-template-columns: 1fr;
+      }
+      .topbar{
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 560px){
+      .topbar{
+        grid-template-columns: 1fr;
+      }
+      .btns{
+        grid-template-columns: 1fr;
+      }
+      .legend{
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
-
 <body>
+  <div class="wrap">
+    <h1>🍕 El reloj de los ángulos</h1>
+    <p class="subtitle">Aprendemos los grados usando una pizza reloj.</p>
 
-<h1>🍕 El reloj de los ángulos</h1>
-<p id="reto">Forma el ángulo de <b id="angulo"></b>°</p>
+    <div class="topbar">
+      <div class="panel">
+        <div class="label">Reto actual</div>
+        <div class="value"><span id="anguloObjetivo">90</span>°</div>
+      </div>
+      <div class="panel">
+        <div class="label">Tu selección</div>
+        <div class="value"><span id="gradosActuales">0</span>°</div>
+      </div>
+      <div class="panel">
+        <div class="label">Puntos</div>
+        <div class="value" id="puntos">0</div>
+      </div>
+      <div class="panel">
+        <div class="label">Tiempo</div>
+        <div class="value"><span id="tiempo">30</span>s</div>
+      </div>
+    </div>
 
-<svg id="pizza" width="400" height="400" viewBox="-200 -200 400 400"></svg>
+    <div class="main">
+      <div class="pizza-card">
+        <svg id="pizzaSvg" viewBox="-340 -340 680 680" aria-label="Pizza interactiva de ángulos"></svg>
+        <div class="footer-note">Cada rebanada vale <strong>30°</strong>. Haz clic para colorearla.</div>
+        <div class="hint">Meta: forma el ángulo correcto sumando rebanadas de 30°.</div>
+      </div>
 
-<br>
+      <div class="side">
+        <div class="instructions">
+          <h2>📘 Cómo jugar</h2>
+          <p><strong>1.</strong> Observa el reto en grados.</p>
+          <p><strong>2.</strong> Haz clic en las rebanadas para colorearlas.</p>
+          <p><strong>3.</strong> Cada rebanada suma <strong>30°</strong>.</p>
+          <p><strong>4.</strong> Presiona <strong>Revisar</strong>.</p>
 
-<button onclick="revisar()">Revisar</button>
-<button onclick="reiniciar()">Nuevo reto</button>
+          <div class="legend">
+            <div class="mini">1 rebanada = 30°</div>
+            <div class="mini">3 rebanadas = 90°</div>
+            <div class="mini">6 rebanadas = 180°</div>
+            <div class="mini">12 rebanadas = 360°</div>
+          </div>
+        </div>
 
-<p id="resultado"></p>
+        <div class="btns">
+          <button class="btn-good" id="btnRevisar">✅ Revisar</button>
+          <button class="btn-accent" id="btnNuevo">🎯 Nuevo reto</button>
+          <button class="btn-warn" id="btnPista">💡 Pista</button>
+          <button class="btn-reset" id="btnLimpiar">🧹 Limpiar</button>
+        </div>
 
-<script>
+        <div id="resultado">Selecciona rebanadas y forma el ángulo.</div>
 
-const pizza = document.getElementById("pizza");
-const anguloTexto = document.getElementById("angulo");
-const resultado = document.getElementById("resultado");
+        <div class="instructions">
+          <h2>🎮 Modos de práctica</h2>
+          <p><strong>Nivel 1:</strong> 30°, 60°, 90°, 120°</p>
+          <p><strong>Nivel 2:</strong> 150°, 180°, 210°, 240°</p>
+          <p><strong>Nivel 3:</strong> 270°, 300°, 330°, 360°</p>
+          <p class="tiny">El juego cambia de nivel conforme aciertas retos.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
-const slices = [];
-let objetivo = 0;
+  <script>
+    const svg = document.getElementById("pizzaSvg");
+    const gradosActualesEl = document.getElementById("gradosActuales");
+    const anguloObjetivoEl = document.getElementById("anguloObjetivo");
+    const puntosEl = document.getElementById("puntos");
+    const tiempoEl = document.getElementById("tiempo");
+    const resultadoEl = document.getElementById("resultado");
 
-function crearPizza(){
-pizza.innerHTML="";
-for(let i=0;i<12;i++){
+    const btnRevisar = document.getElementById("btnRevisar");
+    const btnNuevo = document.getElementById("btnNuevo");
+    const btnPista = document.getElementById("btnPista");
+    const btnLimpiar = document.getElementById("btnLimpiar");
 
-let ang1 = (i*30-90)*Math.PI/180;
-let ang2 = ((i+1)*30-90)*Math.PI/180;
+    const TOTAL_SLICES = 12;
+    const DEGREES_PER_SLICE = 30;
+    const outerR = 245;
+    const innerR = 0;
 
-let x1 = Math.cos(ang1)*180;
-let y1 = Math.sin(ang1)*180;
+    let slices = [];
+    let objetivo = 90;
+    let puntos = 0;
+    let tiempo = 30;
+    let timer = null;
+    let aciertos = 0;
+    let nivel = 1;
 
-let x2 = Math.cos(ang2)*180;
-let y2 = Math.sin(ang2)*180;
+    function polarToCartesian(angleDeg, radius){
+      const rad = (angleDeg - 90) * Math.PI / 180;
+      return {
+        x: Math.cos(rad) * radius,
+        y: Math.sin(rad) * radius
+      };
+    }
 
-let path = document.createElementNS("http://www.w3.org/2000/svg","path");
+    function describeSlice(startAngle, endAngle, radius){
+      const start = polarToCartesian(endAngle, radius);
+      const end = polarToCartesian(startAngle, radius);
+      const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+      return `M 0 0 L ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 0 ${end.x} ${end.y} Z`;
+    }
 
-let d = `M0,0 L${x1},${y1} A180,180 0 0,1 ${x2},${y2} Z`;
+    function createEl(name, attrs = {}, parent = null){
+      const el = document.createElementNS("http://www.w3.org/2000/svg", name);
+      for(const [k, v] of Object.entries(attrs)){
+        el.setAttribute(k, v);
+      }
+      if(parent) parent.appendChild(el);
+      return el;
+    }
 
-path.setAttribute("d",d);
-path.setAttribute("class","slice");
-path.dataset.index=i;
+    function drawPizza(){
+      svg.innerHTML = "";
+      slices = [];
 
-path.addEventListener("click",()=>{
-path.classList.toggle("selected");
-});
+      createEl("rect", {
+        x: -330, y: -330, width: 660, height: 660,
+        fill: "transparent"
+      }, svg);
 
-pizza.appendChild(path);
-slices.push(path);
-}
-}
+      createEl("circle", {
+        cx: 0, cy: 0, r: 275,
+        fill: "#d9a066",
+        stroke: "#a66d36",
+        "stroke-width": 8
+      }, svg);
 
-function nuevoReto(){
+      createEl("circle", {
+        cx: 0, cy: 0, r: 245,
+        fill: "#c53b2c",
+        opacity: 0.98
+      }, svg);
 
-const angulos=[30,60,90,120,150,180,210,240,270,300];
-objetivo = angulos[Math.floor(Math.random()*angulos.length)];
+      createEl("circle", {
+        cx: 0, cy: 0, r: 228,
+        fill: "#f6d86b",
+        stroke: "#ddb94b",
+        "stroke-width": 3
+      }, svg);
 
-anguloTexto.textContent=objetivo;
+      for(let i = 0; i < TOTAL_SLICES; i++){
+        const startAngle = i * 30;
+        const endAngle = (i + 1) * 30;
 
-resultado.textContent="";
-reiniciarSeleccion();
-}
+        const g = createEl("g", { class: "slice", "data-index": i }, svg);
 
-function reiniciarSeleccion(){
-document.querySelectorAll(".slice").forEach(s=>{
-s.classList.remove("selected");
-});
-}
+        const pathD = describeSlice(startAngle, endAngle, outerR);
 
-function revisar(){
+        createEl("path", {
+          d: pathD,
+          class: "sauceEdge",
+          fill: "#c53b2c",
+          opacity: "0.22"
+        }, g);
 
-let seleccionadas = document.querySelectorAll(".selected").length;
-let grados = seleccionadas * 30;
+        createEl("path", {
+          d: pathD,
+          class: "cheeseFill",
+          fill: "#f6d86b"
+        }, g);
 
-if(grados===objetivo){
-resultado.style.color="green";
-resultado.textContent="¡Correcto! "+seleccionadas+" rebanadas = "+grados+"°";
-}else{
-resultado.style.color="red";
-resultado.textContent="Intenta otra vez. Tienes "+grados+"°";
-}
-}
+        createEl("path", {
+          d: pathD,
+          class: "sliceBorder",
+          fill: "transparent",
+          stroke: "#2f2f2f",
+          "stroke-width": 2.5
+        }, g);
 
-function reiniciar(){
-nuevoReto();
-}
+        const midAngle = startAngle + 15;
+        const labelPos = polarToCartesian(midAngle, 135);
 
-crearPizza();
-nuevoReto();
+        createEl("text", {
+          x: labelPos.x,
+          y: labelPos.y,
+          "text-anchor": "middle",
+          "dominant-baseline": "middle",
+          class: "angle-label"
+        }, g).textContent = "30°";
 
-</script>
+        addPepperoni(g, startAngle, endAngle, i);
+        addCheeseStrips(g, startAngle, endAngle, i);
 
+        g.addEventListener("click", () => toggleSlice(i));
+
+        slices.push({
+          index: i,
+          selected: false,
+          group: g
+        });
+      }
+
+      createEl("circle", {
+        cx: 0, cy: 0, r: 10,
+        fill: "#1c1c1c"
+      }, svg);
+
+      for(let i = 1; i <= 12; i++){
+        const angle = (i % 12) * 30;
+        const pos = polarToCartesian(angle, 290);
+        createEl("text", {
+          x: pos.x,
+          y: pos.y,
+          "text-anchor": "middle",
+          "dominant-baseline": "middle",
+          class: "hour-label"
+        }, svg).textContent = i === 12 ? "12" : String(i);
+      }
+    }
+
+    function addPepperoni(parent, startAngle, endAngle, seed){
+      const mid = startAngle + 15;
+      const offsets = [
+        { r: 90, a: mid - 6 },
+        { r: 58, a: mid + 4 }
+      ];
+
+      offsets.forEach((o, idx) => {
+        const p = polarToCartesian(o.a, o.r + (seed % 2) * 3);
+        const pep = createEl("circle", {
+          cx: p.x,
+          cy: p.y,
+          r: idx === 0 ? 17 : 14,
+          fill: "#bb2f24",
+          stroke: "#7e1610",
+          "stroke-width": 2,
+          opacity: 0.95
+        }, parent);
+
+        for(let k = 0; k < 4; k++){
+          const dotPos = polarToCartesian(mid + (k * 70) % 360, (idx === 0 ? 6 : 5));
+          createEl("circle", {
+            cx: p.x + dotPos.x * 0.35,
+            cy: p.y + dotPos.y * 0.35,
+            r: 1.6,
+            fill: "#7e1610",
+            opacity: 0.8
+          }, parent);
+        }
+      });
+    }
+
+    function addCheeseStrips(parent, startAngle, endAngle, seed){
+      const angles = [startAngle + 8, startAngle + 20];
+      angles.forEach((a, idx) => {
+        const p = polarToCartesian(a, 115 + (idx * 35));
+        createEl("line", {
+          x1: p.x - 5,
+          y1: p.y - 5,
+          x2: p.x + 5,
+          y2: p.y + 5,
+          stroke: "#78b34d",
+          "stroke-width": 3,
+          "stroke-linecap": "round",
+          opacity: 0.9
+        }, parent);
+      });
+    }
+
+    function toggleSlice(i){
+      slices[i].selected = !slices[i].selected;
+      slices[i].group.classList.toggle("selected", slices[i].selected);
+      updateCurrentDegrees();
+    }
+
+    function updateCurrentDegrees(){
+      const selectedCount = slices.filter(s => s.selected).length;
+      gradosActualesEl.textContent = selectedCount * DEGREES_PER_SLICE;
+    }
+
+    function clearSelection(){
+      slices.forEach(s => {
+        s.selected = false;
+        s.group.classList.remove("selected");
+      });
+      updateCurrentDegrees();
+      setMessage("Selecciona rebanadas y forma el ángulo.", "");
+    }
+
+    function getPoolByLevel(level){
+      if(level === 1) return [30, 60, 90, 120];
+      if(level === 2) return [150, 180, 210, 240];
+      return [270, 300, 330, 360];
+    }
+
+    function updateLevel(){
+      if(aciertos >= 6) nivel = 3;
+      else if(aciertos >= 3) nivel = 2;
+      else nivel = 1;
+    }
+
+    function newChallenge(){
+      updateLevel();
+      const pool = getPoolByLevel(nivel);
+      objetivo = pool[Math.floor(Math.random() * pool.length)];
+      anguloObjetivoEl.textContent = objetivo;
+      clearSelection();
+      resetTimer();
+      startTimer();
+    }
+
+    function selectedDegrees(){
+      return slices.filter(s => s.selected).length * DEGREES_PER_SLICE;
+    }
+
+    function reviewAnswer(){
+      const actual = selectedDegrees();
+
+      if(actual === objetivo){
+        aciertos++;
+        puntos += 10;
+        puntosEl.textContent = puntos;
+        setMessage(`¡Correcto! Formaste ${actual}°.`, "ok");
+        playSuccess();
+        stopTimer();
+        setTimeout(newChallenge, 1100);
+      } else {
+        puntos = Math.max(0, puntos - 2);
+        puntosEl.textContent = puntos;
+        setMessage(`Todavía no. Tienes ${actual}° y el reto es ${objetivo}°.`, "bad");
+        playFail();
+      }
+    }
+
+    function setMessage(text, cls){
+      resultadoEl.textContent = text;
+      resultadoEl.className = cls ? cls : "";
+    }
+
+    function resetTimer(){
+      stopTimer();
+      tiempo = 30;
+      tiempoEl.textContent = tiempo;
+    }
+
+    function startTimer(){
+      stopTimer();
+      timer = setInterval(() => {
+        tiempo--;
+        tiempoEl.textContent = tiempo;
+        if(tiempo <= 0){
+          stopTimer();
+          puntos = Math.max(0, puntos - 3);
+          puntosEl.textContent = puntos;
+          setMessage(`Se acabó el tiempo. El reto era ${objetivo}°.`, "bad");
+          playFail();
+          setTimeout(newChallenge, 1300);
+        }
+      }, 1000);
+    }
+
+    function stopTimer(){
+      if(timer){
+        clearInterval(timer);
+        timer = null;
+      }
+    }
+
+    function hint(){
+      const neededSlices = objetivo / DEGREES_PER_SLICE;
+      setMessage(`Pista: necesitas ${neededSlices} rebanada${neededSlices === 1 ? "" : "s"} de 30°.`, "");
+    }
+
+    function playSuccess(){
+      try{
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const now = ctx.currentTime;
+
+        const o1 = ctx.createOscillator();
+        const o2 = ctx.createOscillator();
+        const g = ctx.createGain();
+
+        o1.type = "triangle";
+        o2.type = "triangle";
+        o1.frequency.setValueAtTime(523.25, now);
+        o2.frequency.setValueAtTime(659.25, now + 0.08);
+
+        g.gain.setValueAtTime(0.001, now);
+        g.gain.exponentialRampToValueAtTime(0.12, now + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+        o1.connect(g);
+        o2.connect(g);
+        g.connect(ctx.destination);
+
+        o1.start(now);
+        o2.start(now + 0.08);
+        o1.stop(now + 0.22);
+        o2.stop(now + 0.35);
+      }catch(e){}
+    }
+
+    function playFail(){
+      try{
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const now = ctx.currentTime;
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+
+        o.type = "sawtooth";
+        o.frequency.setValueAtTime(220, now);
+        o.frequency.exponentialRampToValueAtTime(140, now + 0.22);
+
+        g.gain.setValueAtTime(0.001, now);
+        g.gain.exponentialRampToValueAtTime(0.08, now + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+        o.connect(g);
+        g.connect(ctx.destination);
+
+        o.start(now);
+        o.stop(now + 0.25);
+      }catch(e){}
+    }
+
+    btnRevisar.addEventListener("click", reviewAnswer);
+    btnNuevo.addEventListener("click", newChallenge);
+    btnPista.addEventListener("click", hint);
+    btnLimpiar.addEventListener("click", clearSelection);
+
+    drawPizza();
+    newChallenge();
+  </script>
 </body>
 </html>
