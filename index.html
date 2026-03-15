@@ -472,8 +472,8 @@
 
       sectorPath = createEl("path", {
         d: "",
-        fill: "#d7263d",
-        opacity: "0.18"
+        fill: "#0057ff",
+        opacity: "0.22"
       }, svg);
 
       baseRay = createEl("line", {
@@ -487,22 +487,22 @@
       arcPath = createEl("path", {
         d: "",
         fill: "none",
-        stroke: "#d7263d",
-        "stroke-width": 10,
+        stroke: "#0057ff",
+        "stroke-width": 12,
         "stroke-linecap": "round"
       }, svg);
 
       endRay = createEl("line", {
         x1: 0, y1: 0,
         x2: 0, y2: -205,
-        stroke: "#d7263d",
-        "stroke-width": 8,
+        stroke: "#0057ff",
+        "stroke-width": 10,
         "stroke-linecap": "round"
       }, svg);
 
       endArrow = createEl("polygon", {
-        points: "0,-18 -10,6 10,6",
-        fill: "#d7263d",
+        points: "0,-20 -12,8 12,8",
+        fill: "#0057ff",
         transform: "translate(0,-205) rotate(0)"
       }, svg);
 
@@ -510,9 +510,12 @@
         x: 0, y: -70,
         "text-anchor": "middle",
         "dominant-baseline": "middle",
-        fill: "#d7263d",
-        "font-size": "28",
-        "font-weight": "700"
+        fill: "#0057ff",
+        stroke: "#ffffff",
+        "stroke-width": "3",
+        "paint-order": "stroke",
+        "font-size": "34",
+        "font-weight": "900"
       }, svg);
 
       createEl("circle", {
