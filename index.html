@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>El reloj de los ángulos - Pizza consecutiva</title>
+  <title>El reloj de los ángulos - Pizza con modo libre</title>
   <style>
     :root{
       --bg:#f7f4ee;
@@ -40,6 +40,30 @@
     .subtitle{
       margin:0 0 14px;
       font-size:clamp(1rem,2vw,1.3rem);
+    }
+
+    .modebar{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin:8px 0 16px;
+    }
+
+    .modebtn{
+      border:none;
+      border-radius:16px;
+      padding:12px 18px;
+      font-size:1rem;
+      font-weight:700;
+      cursor:pointer;
+      background:#444;
+      color:#fff;
+      box-shadow:0 4px 0 rgba(0,0,0,.18);
+    }
+
+    .modebtn.active{
+      background:#e67e22;
     }
 
     .topbar{
@@ -180,6 +204,10 @@
       color:#555;
     }
 
+    .hidden{
+      display:none !important;
+    }
+
     svg{
       width:100%;
       height:auto;
@@ -239,8 +267,13 @@
     <h1>🍕 El reloj de los ángulos</h1>
     <p class="subtitle">Aprendemos los grados usando una pizza reloj.</p>
 
+    <div class="modebar">
+      <button class="modebtn active" id="btnModoReto">🎯 Modo reto</button>
+      <button class="modebtn" id="btnModoLibre">✏️ Modo libre</button>
+    </div>
+
     <div class="topbar">
-      <div class="panel">
+      <div class="panel" id="panelReto">
         <div class="label">Reto actual</div>
         <div class="value"><span id="anguloObjetivo">90</span>°</div>
       </div>
@@ -248,11 +281,11 @@
         <div class="label">Tu selección</div>
         <div class="value"><span id="gradosActuales">0</span>°</div>
       </div>
-      <div class="panel">
+      <div class="panel" id="panelPuntos">
         <div class="label">Puntos</div>
         <div class="value" id="puntos">0</div>
       </div>
-      <div class="panel">
+      <div class="panel" id="panelTiempo">
         <div class="label">Tiempo</div>
         <div class="value"><span id="tiempo">30</span>s</div>
       </div>
@@ -264,7 +297,7 @@
         <div class="footer-note">
           Cada rebanada vale <strong>30°</strong>. La selección siempre va seguida.
         </div>
-        <div class="hint">
+        <div class="hint" id="textoAyuda">
           Haz clic en una rebanada y el juego formará el ángulo desde las 12 hasta esa posición.
         </div>
       </div>
@@ -272,11 +305,10 @@
       <div class="side">
         <div class="instructions">
           <h2>📘 Cómo jugar</h2>
-          <p><strong>1.</strong> Observa el reto en grados.</p>
-          <p><strong>2.</strong> Haz clic en una rebanada.</p>
-          <p><strong>3.</strong> La pizza se colorea <strong>seguida</strong>.</p>
-          <p><strong>4.</strong> Mira las <strong>líneas</strong>, el <strong>arco</strong> y el <strong>sector</strong>.</p>
-          <p><strong>5.</strong> Presiona <strong>Revisar</strong>.</p>
+          <p><strong>1.</strong> Haz clic en una rebanada.</p>
+          <p><strong>2.</strong> La pizza se colorea <strong>seguida</strong>.</p>
+          <p><strong>3.</strong> Observa las <strong>líneas</strong>, el <strong>arco</strong> y el <strong>sector</strong>.</p>
+          <p id="textoPaso4"><strong>4.</strong> Presiona <strong>Revisar</strong>.</p>
 
           <div class="legend">
             <div class="mini">1 rebanada = 30°</div>
@@ -300,7 +332,7 @@
           <p><strong>Nivel 1:</strong> 30°, 60°, 90°, 120°</p>
           <p><strong>Nivel 2:</strong> 150°, 180°, 210°, 240°</p>
           <p><strong>Nivel 3:</strong> 270°, 300°, 330°, 360°</p>
-          <p class="tiny">Ahora el ángulo se ve como en un libro: líneas + arco + abertura.</p>
+          <p class="tiny">En modo libre puedes formar cualquier ángulo disponible de 30° en 30°.</p>
         </div>
       </div>
     </div>
@@ -318,6 +350,14 @@
     const btnNuevo = document.getElementById("btnNuevo");
     const btnPista = document.getElementById("btnPista");
     const btnLimpiar = document.getElementById("btnLimpiar");
+    const btnModoReto = document.getElementById("btnModoReto");
+    const btnModoLibre = document.getElementById("btnModoLibre");
+
+    const panelReto = document.getElementById("panelReto");
+    const panelPuntos = document.getElementById("panelPuntos");
+    const panelTiempo = document.getElementById("panelTiempo");
+    const textoAyuda = document.getElementById("textoAyuda");
+    const textoPaso4 = document.getElementById("textoPaso4");
 
     const TOTAL_SLICES = 12;
     const DEGREES_PER_SLICE = 30;
@@ -332,15 +372,13 @@
     let timer = null;
     let aciertos = 0;
     let nivel = 1;
+    let modo = "reto";
 
     let sectorPath, arcPath, endRay, baseRay, angleText, endArrow;
 
     function polarToCartesian(angleDeg, radius){
       const rad = (angleDeg - 90) * Math.PI / 180;
-      return {
-        x: Math.cos(rad) * radius,
-        y: Math.sin(rad) * radius
-      };
+      return { x: Math.cos(rad) * radius, y: Math.sin(rad) * radius };
     }
 
     function describeSlice(startAngle, endAngle, radius){
@@ -368,9 +406,7 @@
 
     function createEl(name, attrs = {}, parent = null){
       const el = document.createElementNS("http://www.w3.org/2000/svg", name);
-      for(const [k, v] of Object.entries(attrs)){
-        el.setAttribute(k, v);
-      }
+      for(const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
       if(parent) parent.appendChild(el);
       return el;
     }
@@ -405,18 +441,8 @@
         const g = createEl("g", { class: "slice", "data-index": i }, svg);
         const pathD = describeSlice(startAngle, endAngle, outerR);
 
-        createEl("path", {
-          d: pathD,
-          fill: "#c53b2c",
-          opacity: "0.22"
-        }, g);
-
-        createEl("path", {
-          d: pathD,
-          class: "cheeseFill",
-          fill: "#f6d86b"
-        }, g);
-
+        createEl("path", { d: pathD, fill: "#c53b2c", opacity: "0.22" }, g);
+        createEl("path", { d: pathD, class: "cheeseFill", fill: "#f6d86b" }, g);
         createEl("path", {
           d: pathD,
           class: "sliceBorder",
@@ -550,6 +576,10 @@
       selectedCountValue = count;
       updateSelectedUI();
       updateVisuals(selectedDegrees());
+
+      if(modo === "libre"){
+        setMessage(`Modo libre: formaste ${selectedDegrees()}°.`, "");
+      }
     }
 
     function updateSelectedUI(){
@@ -602,7 +632,12 @@
       selectedCountValue = 0;
       updateSelectedUI();
       updateVisuals(0);
-      setMessage("Haz clic en una rebanada para formar un ángulo continuo.", "");
+
+      if(modo === "reto"){
+        setMessage("Haz clic en una rebanada para formar un ángulo continuo.", "");
+      } else {
+        setMessage("Modo libre: forma el ángulo que quieras.", "");
+      }
     }
 
     function getPoolByLevel(level){
@@ -618,6 +653,8 @@
     }
 
     function newChallenge(){
+      if(modo !== "reto") return;
+
       updateLevel();
       const pool = getPoolByLevel(nivel);
       objetivo = pool[Math.floor(Math.random() * pool.length)];
@@ -628,6 +665,11 @@
     }
 
     function reviewAnswer(){
+      if(modo !== "reto"){
+        setMessage(`Modo libre: ahora mismo tienes ${selectedDegrees()}°.`, "");
+        return;
+      }
+
       const actual = selectedDegrees();
 
       if(actual === objetivo){
@@ -647,6 +689,11 @@
     }
 
     function hint(){
+      if(modo !== "reto"){
+        setMessage("Modo libre: prueba 3 rebanadas para 90°, 6 para 180° y 12 para 360°.", "");
+        return;
+      }
+
       const neededSlices = objetivo / DEGREES_PER_SLICE;
       setMessage(`Pista: necesitas ${neededSlices} rebanada${neededSlices === 1 ? "" : "s"} seguidas.`, "");
     }
@@ -663,10 +710,13 @@
     }
 
     function startTimer(){
+      if(modo !== "reto") return;
+
       stopTimer();
       timer = setInterval(() => {
         tiempo--;
         tiempoEl.textContent = tiempo;
+
         if(tiempo <= 0){
           stopTimer();
           puntos = Math.max(0, puntos - 3);
@@ -683,6 +733,48 @@
         clearInterval(timer);
         timer = null;
       }
+    }
+
+    function activarModoReto(){
+      modo = "reto";
+      btnModoReto.classList.add("active");
+      btnModoLibre.classList.remove("active");
+
+      panelReto.classList.remove("hidden");
+      panelPuntos.classList.remove("hidden");
+      panelTiempo.classList.remove("hidden");
+
+      btnRevisar.classList.remove("hidden");
+      btnNuevo.classList.remove("hidden");
+      btnPista.classList.remove("hidden");
+
+      textoAyuda.textContent = "Haz clic en una rebanada y el juego formará el ángulo desde las 12 hasta esa posición.";
+      textoPaso4.innerHTML = "<strong>4.</strong> Presiona <strong>Revisar</strong>.";
+
+      setMessage("Haz clic en una rebanada para formar un ángulo continuo.", "");
+      newChallenge();
+    }
+
+    function activarModoLibre(){
+      modo = "libre";
+      btnModoLibre.classList.add("active");
+      btnModoReto.classList.remove("active");
+
+      stopTimer();
+
+      panelReto.classList.add("hidden");
+      panelPuntos.classList.add("hidden");
+      panelTiempo.classList.add("hidden");
+
+      btnRevisar.classList.add("hidden");
+      btnNuevo.classList.add("hidden");
+      btnPista.classList.add("hidden");
+
+      textoAyuda.textContent = "Modo libre: forma cualquier ángulo de 30° en 30°.";
+      textoPaso4.innerHTML = "<strong>4.</strong> Observa cuántos grados formaste.";
+
+      clearSelection();
+      setMessage("Modo libre: forma el ángulo que quieras.", "");
     }
 
     function playSuccess(){
@@ -740,9 +832,11 @@
     btnNuevo.addEventListener("click", newChallenge);
     btnPista.addEventListener("click", hint);
     btnLimpiar.addEventListener("click", clearSelection);
+    btnModoReto.addEventListener("click", activarModoReto);
+    btnModoLibre.addEventListener("click", activarModoLibre);
 
     drawPizza();
-    newChallenge();
+    activarModoReto();
   </script>
 </body>
 </html>
